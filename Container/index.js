@@ -1,6 +1,6 @@
 "use strict";
 
-var _ = require("underscore");
+const _ = require("underscore");
 
 /**
  * A class for managing Services.
@@ -10,10 +10,14 @@ class Container {
 
     /**
      * Retrieves all Services.
+     *
+     * @param {Array} services
      */
-    constructor () {
+    constructor (... services) {
         this.services = require("../services")(this);
-        _.extend(this.services, require("../../Services/services")(this));
+        services.forEach((service) => {
+            _.extend(this.services, service(this));
+        });
 
         this.cache = {};
     }
@@ -58,7 +62,7 @@ class Container {
     }
 
     /**
-     * Adds a new service to the `services` property.
+     * (Re)Define a service.
      *
      * @param {String}  name
      * @param {*}       service

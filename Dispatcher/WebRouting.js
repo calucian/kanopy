@@ -4,10 +4,13 @@ const fs = require("fs");
 const _ = require("underscore");
 const yaml = require("js-yaml");
 
+
+const Errors = require("../Errors");
+
 /**
  * A class for mapping CLI commands with their .js file
  */
-module.exports.Routing = class Routing {
+class Routing {
 
     /**
      * Initialize properties.
@@ -57,7 +60,6 @@ module.exports.Routing = class Routing {
             }
 
             obj.methods.forEach((method) => {
-                console.log(method, key);
                 this.app[method.toLowerCase()](key + "_" + method.toLowerCase(), prefix + obj.pattern, async (request, response) => {
                     const module = obj.module || request.params.module;
                     const action = obj.action || request.params.action;
@@ -70,9 +72,12 @@ module.exports.Routing = class Routing {
                     }
 
                     try {
-                        var a = await c[action + "Controller"](request,response);
+                        let a = await c[action + "Controller"](request, response);
                     }
-                    catch(error) {
+                    catch (error) {
+                        if (error instanceof Errors.NotFoundException) {
+
+                        }
                         console.log(error);
 
                         response.send({
@@ -85,4 +90,6 @@ module.exports.Routing = class Routing {
             });
         });
     }
-};
+}
+
+module.exports = Routing;

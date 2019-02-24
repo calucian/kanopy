@@ -19,6 +19,11 @@ const services = function (container) {
 
             return new Service();
         },
+        "security" : function () {
+            const security = require("security");
+
+            return new security();
+        },
         "express": function () {
             const express = require("express");
 
