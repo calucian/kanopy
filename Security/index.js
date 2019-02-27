@@ -1,16 +1,9 @@
-class Security
-{
-    constructor(provider) {
-        this.provider = provider;
-    }
+const BasicSecurityUser = require("./BasicSecurityUser");
+const SecurityUser = require("./SecurityUser");
+const Storage = require("./Storage");
 
-    getUser () {
-        return this.provider.getUser();
-    }
-
-    IsGranted () {
-        return
-    }
-}
-
-module.exports = Security;
+module.exports = {
+    BasicSecurityUser,
+    SecurityUser,
+    Storage
+};

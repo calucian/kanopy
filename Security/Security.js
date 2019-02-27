@@ -1,12 +1,3 @@
-const BasicSecurityUser = require("BasicSecurityUser");
+module.exports = {
 
-class Security
-{
-    constructor (storage) {
-        this.storage = storage;
-    }
-
-
-}
-
-module.exports = Security;
+};

@@ -11,3 +11,5 @@ class Memory {
         this.values[sessionID] = attributes;
     }
 }
+
+module.exports = Memory;

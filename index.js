@@ -5,6 +5,7 @@ const EntityManager = require("./EntityManager/EntityManager");
 const Exceptions = require("./Exceptions");
 const ExpressInjector = require("./Lib/ExpressInjector");
 const Services = require("./Services");
+const Security = require("./Security");
 
 module.exports = {
     Actions,
@@ -13,5 +14,6 @@ module.exports = {
     EntityManager,
     Exceptions,
     ExpressInjector,
+    Security,
     Services
 };

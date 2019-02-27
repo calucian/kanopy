@@ -8,6 +8,7 @@ class BasicSecurityUser
         this.sessionId = null;
         this.authenticated = false;
         this.credentials = [];
+        this.attributes = {};
     }
 
     async loadAttributes (sessionID) {
@@ -15,9 +16,28 @@ class BasicSecurityUser
         this.attributes = await this.storage.getAttributes(sessionID);
     }
 
-    regenerate () {
-        this.storage.regenerate(this.attributes, this.sessionID);
+    async regenerate () {
+        await this.storage.regenerate({
+            attributes: this.attributes,
+            authenticated: this.authenticated,
+            credentials: this.credentials
+        }, this.sessionId);
     }
+
+    setAttribute (attribute, value) {
+        this.attributes[attribute] = value;
+
+        return this.regenerate();
+    }
+
+    getAttribute (attribute, defaultValue = null) {
+        return this.attributes.hasOwnProperty(attribute) ? this.attributes[attribute] : value;
+    }
+
+    clearAttributes () {
+        this.attributes = {};
+    }
+
 
     hasCredential (credentials, useAnd = false) {
         if (!this.credentials) {
@@ -47,7 +67,7 @@ class BasicSecurityUser
         return test;
     }
 
-    addCredentials (credentials) {
+    async addCredentials (credentials) {
         let added = false;
 
         credentials.forEach((credential) => {
@@ -60,15 +80,15 @@ class BasicSecurityUser
         });
 
         if (added) {
-            this.regenerate();
+            await this.regenerate();
         }
     }
 
-    removeCredential (credential) {
+    async removeCredential (credential) {
         if (this.hasCredential(credential)) {
             this.credentials.splice(this.credentials.indexOf(credential), 1);
 
-            this.regenerate();
+            await this.regenerate();
         }
     }
 
@@ -88,7 +108,7 @@ class BasicSecurityUser
         return this.authenticated;
     }
 
-    setAuthenticated (authenticated)
+    async setAuthenticated (authenticated)
     {
         // @TODO add logging
 
@@ -106,7 +126,7 @@ class BasicSecurityUser
 
             // @TODO add logging
 
-            this.regenerate();
+            await this.regenerate();
         }
     }
 }
