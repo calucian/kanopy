@@ -5,7 +5,7 @@ const _ = require("underscore");
 const yaml = require("js-yaml");
 
 
-const Errors = require("../Errors");
+const Errors = require("../Exceptions");
 
 /**
  * A class for mapping CLI commands with their .js file

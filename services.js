@@ -19,10 +19,16 @@ const services = function (container) {
 
             return new Service();
         },
-        "security" : function () {
-            const security = require("security");
+        "express.security" : function () {
+            return new ExpressInjector((app) => {
+                const Security = require("./Security/BasicSecurityUser");
+                const MemoryStorage = require("./Security/Storage/Memory");
 
-            return new security();
+                app.use(async (req) => {
+                    req.security = new Security(new MemoryStorage());
+                    await req.security.loadAttributes(req.headers.session);
+                });
+            });
         },
         "express": function () {
             const express = require("express");

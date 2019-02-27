@@ -1,4 +1,4 @@
-const Errors = require("../Errors");
+const Errors = require("../Exceptions");
 
 class Index
 {
