@@ -1,6 +1,6 @@
 {
   "name": "kanopy",
-  "version": "0.0.1",
+  "version": "development",
   "description": "Express based framework, early prototype",
   "main": "index.js",
   "scripts": {
