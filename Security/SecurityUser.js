@@ -1,4 +1,4 @@
-const BasicSecurityUser = require('BasicSecurityUser');
+const BasicSecurityUser = require('./BasicSecurityUser');
 
 class SecurityUser extends BasicSecurityUser {
     constructor (storage, userProvider, sessionID) {

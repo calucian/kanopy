@@ -4,13 +4,10 @@ const fs = require("fs");
 const _ = require("underscore");
 const yaml = require("js-yaml");
 
-
-const Errors = require("../Exceptions");
-
 /**
  * A class for mapping CLI commands with their .js file
  */
-class Routing {
+module.exports = class Routing {
 
     /**
      * Initialize properties.
@@ -29,7 +26,7 @@ class Routing {
 
     initControllers (controllerPath, name) {
         fs
-            .readdirSync(controllerPath) 
+            .readdirSync(controllerPath)
             .forEach((file) => {
                 if (fs.statSync(controllerPath + '/' + file).isDirectory()) {
                     return this.initControllers(controllerPath + '/' + file, name || file);
@@ -48,12 +45,6 @@ class Routing {
     initRoutes (file, prefix) {
         prefix = prefix || '';
 
-        this.app.get("/test", (req, res) => {
-            res.send({
-                query: req.query
-            })
-        })
-
         let routesYaml = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
 
         _(routesYaml).each((obj, key) => {
@@ -66,7 +57,8 @@ class Routing {
             }
 
             obj.methods.forEach((method) => {
-                this.app[method.toLowerCase()](prefix + obj.pattern, async (request, response) => {
+                console.log(method, key);
+                this.app[method.toLowerCase()](key + "_" + method.toLowerCase(), prefix + obj.pattern,  async(request, response) => {
                     const module = obj.module || request.params.module;
                     const action = obj.action || request.params.action;
 
@@ -78,12 +70,9 @@ class Routing {
                     }
 
                     try {
-                        let a = await c[action + "Controller"](request, response);
+                        var a = await c[action + "Controller"](request,response);
                     }
-                    catch (error) {
-                        if (error instanceof Errors.NotFoundException) {
-
-                        }
+                    catch(error) {
                         console.log(error);
 
                         response.send({
@@ -96,6 +85,4 @@ class Routing {
             });
         });
     }
-}
-
-module.exports = Routing;
+};
