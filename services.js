@@ -35,13 +35,6 @@ const services = function (container) {
                 });
             });
         },
-        /* "express.reverse": function () {
-            return new ExpressInjector((app) => {
-                const expressReverse = require("express-reverse");
-
-                expressReverse(app);
-            });
-        },*/
         "express.body-parser": function () {
             return new ExpressInjector((app) => {
                 const bodyParser = require("body-parser");
@@ -50,32 +43,8 @@ const services = function (container) {
                 app.use(bodyParser.urlencoded({ extended: false }));
             });
         },
-        /* "express.cors": function () {
-            return new ExpressInjector((app) => {
-                const cors = require("cors");
-
-                app.use(cors());
-            });
-        },*/
-        "express.routing": function () {
-            return new ExpressInjector((app) => {
-                const Routing = require("./Dispatcher/WebRouting");
-
-                new Routing(
-                    app,
-                    container.get("config").get("app.basePath"),
-                    container
-                );
-            });
-        },
-        /*"express.twig": function () {
-            return new ExpressInjector((app) => {
-                app.set('views', container.get("config").get("app.basePath") + '/app/views');
-                app.set('view engine', 'twig');
-            });
-        },*/
         "dispatcher.api": function () {
-            const Dispatcher = require("./Services/ApiDispatcher");
+            const Dispatcher = require("./Dispatcher/ApiDispatcher");
 
             return new Dispatcher(
                 container.get("express"),

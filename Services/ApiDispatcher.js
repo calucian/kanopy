@@ -19,7 +19,7 @@ class ApiDispatcher {
     /**
      * Reads application config files and creates all Commands which can be triggered from CLI.
      *
-     * @returns {Dispatcher}
+     * @returns {ApiDispatcher}
      */
     init () {
         this.appServices.forEach((service) => {
@@ -32,7 +32,7 @@ class ApiDispatcher {
     /**
      * Attempts to execute a Command from CLI arguments.
      *
-     * @returns {Dispatcher}
+     * @returns {ApiDispatcher}
      * @see https://www.npmjs.com/package/commander
      */
     listen (port) {
