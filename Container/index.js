@@ -69,6 +69,8 @@ class Container {
      */
     set (name, service) {
         this.services[name] = service;
+
+        return this;
     }
 }
 
