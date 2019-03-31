@@ -1,0 +1,8 @@
+index:
+  pattern: /
+  action: index
+  methods: [GET, POST]
+
+default:
+  pattern: /:module/:action
+  methods: [GET, POST]
