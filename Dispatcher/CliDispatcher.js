@@ -1,6 +1,8 @@
 "use strict";
 
-var program = require("../Commander/Commander");
+const fs = require("fs");
+const program = require("../Commander/Commander");
+
 
 /**
  * A class for handling Commands.
@@ -15,10 +17,9 @@ class CliDispatcher {
      *
      * See {@link Routing} and {@link Container}
      */
-    constructor (routing, container) {
+    constructor (container) {
         this.commands   = [];
         this.container  = container;
-        this.routing    = routing;
     }
 
     /**
@@ -26,17 +27,35 @@ class CliDispatcher {
      *
      * @returns {CliDispatcher}
      */
-    init () {
-        this.routing.readDir(
-            global.BASE_DIR + "src/Command/"
-        );
+    init (path) {
+        let files = this.readDir(path);
 
-        this.routing.getAll().forEach((route) => {
+        files.forEach((route) => {
             let Command = require(route);
             this.commands.push(new Command(program, this.container));
         });
 
         return this;
+    }
+
+    readDir (commandsPath) {
+        let files = [];
+
+        fs.readdirSync(commandsPath).forEach((file) => {
+            let stats = fs.statSync(commandsPath + file);
+
+            if (stats.isDirectory()) {
+                files = [...files, ...this.readDir(commandsPath + file + "/")];
+            }
+
+            if (!/(.*?)Task\.js$/i.test(file)) {
+                return;
+            }
+
+            files.push(commandsPath + file);
+        });
+
+        return files;
     }
 
     /**

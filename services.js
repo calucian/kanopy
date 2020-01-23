@@ -13,11 +13,6 @@ const services = function (container) {
         "config": function () {
             return new (require("./Services/Config"))();
         },
-        "routing": function () {
-            const Service = require("./Services/Routing");
-
-            return new Service();
-        },
         "express": function () {
             const express = require("express");
 
@@ -53,7 +48,7 @@ const services = function (container) {
             );
         },
         "dispatcher.cli": function () {
-            var Service = require("./Services/CliDispatcher");
+            var Service = require("./Dispatcher/CliDispatcher");
 
             return new Service(
                 container.get("routing"),
@@ -61,7 +56,7 @@ const services = function (container) {
             );
         },
         "logger": function () {
-            var Service = require("./Services/Logger");
+            var Service = require("./Logger/Logger");
 
             return new Service (
                 container.get("config")
