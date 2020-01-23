@@ -1,30 +1,58 @@
 "use strict";
 
-const fs = require("fs");
+const fs = require('fs');
 const _ = require("underscore");
 const yaml = require("js-yaml");
 
 /**
- * A class for mapping CLI commands with their .js file
+ * A class for handling Api Controllers.
  */
-module.exports = class Routing {
+class ApiDispatcher
+{
 
     /**
      * Initialize properties.
      */
-    constructor (app, basePath, container) {
-        let config = container.get('config');
-
+    constructor (app, appServices, container) {
         this.app = app;
         this.container = container;
+        this.appServices = appServices;
 
         this.controllers = {};
+    }
 
-        this.initControllers(basePath + '/apps/'+ config.get('application') +'/modules/');
-        this.initRoutes(basePath + '/apps/'+ config.get('application') +'/config/routes.yml');
+    /**
+     * Reads application config files and creates all Commands which can be triggered from CLI.
+     *
+     * @returns {ApiDispatcher}
+     */
+    init (controllerPath) {
+        this.appServices.forEach((service) => {
+            service.inject(this.app);
+        });
+
+        this.initControllers(controllerPath);
+
+        return this;
+    }
+
+    /**
+     * Attempts to execute a Command from CLI arguments.
+     *
+     * @returns {ApiDispatcher}
+     * @see https://www.npmjs.com/package/commander
+     */
+    listen (port) {
+        port = port || 3000;
+
+        this.app.listen(port);
+
+        return this;
     }
 
     initControllers (controllerPath, name) {
+        name = name || "";
+
         fs
             .readdirSync(controllerPath)
             .forEach((file) => {
@@ -32,15 +60,17 @@ module.exports = class Routing {
                     return this.initControllers(controllerPath + '/' + file, name || file);
                 }
 
-                if (!file.match(/.js$/)) {
+                if (file === "routes.yml") {
+                    this.initRoutes(controllerPath + '/' + file);
+                }
+
+                if (!file.match(/Actions\.js$/)) {
                     return;
                 }
 
-                this.controllers[name] = new (require(controllerPath + '/' + file))(this.container);
+                this.controllers[file.replace('Actions.js', '')] = new (require(controllerPath + '/' + file))(this.container);
             });
     }
-
-
 
     initRoutes (file, prefix) {
         prefix = prefix || '';
@@ -57,9 +87,8 @@ module.exports = class Routing {
             }
 
             obj.methods.forEach((method) => {
-                console.log(method, key);
-                this.app[method.toLowerCase()](key + "_" + method.toLowerCase(), prefix + obj.pattern,  async(request, response) => {
-                    const module = obj.module || request.params.module;
+                this.app[method.toLowerCase()](prefix + obj.pattern, async (request, response) => {
+                    const module = obj.module || request.params.module || "";
                     const action = obj.action || request.params.action;
 
                     let c = this.controllers[module];
@@ -69,12 +98,16 @@ module.exports = class Routing {
                         throw new Error('No controller found for ' + obj.controller);
                     }
 
-                    try {
-                        var a = await c[action + "Controller"](request,response);
+                    if (obj.params) {
+                        _(obj.params).each((value, key) => {
+                            request.params[key] = value;
+                        });
                     }
-                    catch(error) {
-                        console.log(error);
 
+                    try {
+                        let a = await c[action + "Controller"](request, response);
+                    }
+                    catch (error) {
                         response.send({
                             status: "error",
                             error: error.message
@@ -85,4 +118,7 @@ module.exports = class Routing {
             });
         });
     }
-};
+}
+
+
+module.exports = ApiDispatcher;

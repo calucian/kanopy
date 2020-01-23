@@ -1,15 +1,17 @@
 const Actions = require("./Actions");
+const Container = require("./Container");
 const Command = require("./Command");
-const EntityManager = require("./EntityManager/EntityManager");
-const Errors = require("./Errors");
+const Exceptions = require("./Exceptions");
 const ExpressInjector = require("./Lib/ExpressInjector");
-const Services = require("./Services");
+const Services = require("./Services/index");
+const Security = require("./Security");
 
 module.exports = {
     Actions,
+    Container,
     Command,
-    EntityManager,
-    Errors,
+    Exceptions,
     ExpressInjector,
+    Security,
     Services
 };

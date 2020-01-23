@@ -1,4 +1,4 @@
-module.exports.ExpressInjector =  class
+class ExpressInjector
 {
     constructor (service) {
         this.service = service;
@@ -8,3 +8,5 @@ module.exports.ExpressInjector =  class
         this.service(express);
     }
 };
+
+module.exports = ExpressInjector;
