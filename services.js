@@ -51,7 +51,6 @@ const services = function (container) {
             var Service = require("./Dispatcher/CliDispatcher");
 
             return new Service(
-                container.get("routing"),
                 container
             );
         },

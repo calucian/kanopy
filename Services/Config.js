@@ -13,8 +13,6 @@ class Config
         var dotenv = require("dotenv");
 
         this.config = dotenv.config().parsed || {};
-
-        console.log(this.config);
     }
 
     /**

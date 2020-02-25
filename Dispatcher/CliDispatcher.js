@@ -1,7 +1,7 @@
 "use strict";
 
 const fs = require("fs");
-const program = require("../Commander/Commander");
+const program = require("../Command/Commander");
 
 
 /**

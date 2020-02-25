@@ -1,9 +1,10 @@
 const Actions = require("../Actions/index");
 
 class TestAction extends Actions {
+
     /**
-     *
-     * @Route ({pattern: "/test", id: "log", methods: "GET"})
+     * @apiType GET
+     * @apiPath /test
      *
      * @param req
      * @param res

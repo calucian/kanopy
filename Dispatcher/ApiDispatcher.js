@@ -1,8 +1,7 @@
 "use strict";
 
-const fs = require('fs');
-const _ = require("underscore");
-const yaml = require("js-yaml");
+const _ = require('lodash');
+const jsdocRestApi = require('jsdoc-rest-api');
 
 /**
  * A class for handling Api Controllers.
@@ -50,70 +49,42 @@ class ApiDispatcher
         return this;
     }
 
-    initControllers (controllerPath, name) {
-        name = name || "";
+    initControllers (controllerPath) {
+        // Assuming you've defined all of your API controllers in `server/api/**`
+        let allApiEndpointsGrouped = jsdocRestApi.generateRoutes({
+            source: controllerPath + "/**/*Action.js"
+        });
 
-        fs
-            .readdirSync(controllerPath)
-            .forEach((file) => {
-                if (fs.statSync(controllerPath + '/' + file).isDirectory()) {
-                    return this.initControllers(controllerPath + '/' + file, name || file);
-                }
 
-                if (file === "routes.yml") {
-                    this.initRoutes(controllerPath + '/' + file);
-                }
+        _(allApiEndpointsGrouped).each((controller) => {
+            let controllerObj = new (require(controllerPath + '/../' + controller.fileAbsolutePath))(this.container);
 
-                if (!file.match(/Actions\.js$/)) {
-                    return;
-                }
+            _(controller.routes).each((routes, method) => {
+                _(routes).each((route) => {
+                    this.app[method.toLowerCase()](route.path, async (request, response) => {
+                        const module = route.ctrlClass;
+                        const action = route.ctrl;
 
-                this.controllers[file.replace('Actions.js', '')] = new (require(controllerPath + '/' + file))(this.container);
-            });
-    }
+                        if (!this.controllers[module]) {
+                            this.controllers[module] = controllerObj;
+                        }
 
-    initRoutes (file, prefix) {
-        prefix = prefix || '';
+                        if (route.bodyObj) {
+                            _(route.bodyObj).each((value, key) => {
+                                request.params[key] = value;
+                            });
+                        }
 
-        let routesYaml = yaml.safeLoad(fs.readFileSync(file, 'utf8'));
-
-        _(routesYaml).each((obj, key) => {
-            if (obj.resource) {
-                return this.initRoutes(path.dirname(file) + '/' + obj.resource, obj.prefix);
-            }
-
-            if (!obj.methods) {
-                throw new Error('No methods defined for controller ' + obj.controller);
-            }
-
-            obj.methods.forEach((method) => {
-                this.app[method.toLowerCase()](prefix + obj.pattern, async (request, response) => {
-                    const module = obj.module || request.params.module || "";
-                    const action = obj.action || request.params.action;
-
-                    let c = this.controllers[module];
-                    let controllerFunction = c[action + "Controller"];
-
-                    if (!controllerFunction) {
-                        throw new Error('No controller found for ' + obj.controller);
-                    }
-
-                    if (obj.params) {
-                        _(obj.params).each((value, key) => {
-                            request.params[key] = value;
-                        });
-                    }
-
-                    try {
-                        let a = await c[action + "Controller"](request, response);
-                    }
-                    catch (error) {
-                        response.send({
-                            status: "error",
-                            error: error.message
-                        })
-                    };
-
+                        try {
+                            let a = await controllerObj[action](request, response);
+                        }
+                        catch (error) {
+                            response.send({
+                                status: "error",
+                                error: error
+                            })
+                        }
+                    });
                 });
             });
         });
