@@ -49,6 +49,45 @@ class ApiDispatcher
         return this;
     }
 
+    registerController (controllerName, controller) {
+        this.controllers[controllerName] = controller;
+    }
+
+    registerAction (method, path, action) {
+        this.app[method.toLowerCase()](path, async (request, response) => {
+            try {
+                let a = await action(request, response);
+            }
+            catch (error) {
+                response.send({
+                    status: "error",
+                    error: error
+                })
+            }
+        });
+    }
+
+    async handleAction (request, response, route) {
+        const module = route.ctrlClass;
+        const action = route.ctrl;
+
+        if (route.bodyObj) {
+            _(route.bodyObj).each((value, key) => {
+                request.params[key] = value;
+            });
+        }
+
+        try {
+            let a = await this.controllers[module][action](request, response);
+        }
+        catch (error) {
+            response.send({
+                status: "error",
+                error: error
+            })
+        }
+    }
+
     initControllers (controllerPath) {
         // Assuming you've defined all of your API controllers in `server/api/**`
         let allApiEndpointsGrouped = jsdocRestApi.generateRoutes({
@@ -61,29 +100,12 @@ class ApiDispatcher
 
             _(controller.routes).each((routes, method) => {
                 _(routes).each((route) => {
-                    this.app[method.toLowerCase()](route.path, async (request, response) => {
-                        const module = route.ctrlClass;
-                        const action = route.ctrl;
+                    if (!this.controllers[module]) {
+                        this.controllers[route.ctrlClass] = controllerObj;
+                    }
 
-                        if (!this.controllers[module]) {
-                            this.controllers[module] = controllerObj;
-                        }
-
-                        if (route.bodyObj) {
-                            _(route.bodyObj).each((value, key) => {
-                                request.params[key] = value;
-                            });
-                        }
-
-                        try {
-                            let a = await controllerObj[action](request, response);
-                        }
-                        catch (error) {
-                            response.send({
-                                status: "error",
-                                error: error
-                            })
-                        }
+                    this.app[method.toLowerCase()](route.path, (request, response) => {
+                        return this.handleAction(request, response, route);
                     });
                 });
             });

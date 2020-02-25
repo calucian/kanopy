@@ -6,6 +6,10 @@ class Index
         this.container = container;
     }
 
+    registerAction (method, path, action) {
+        this.container.get("dispatcher.api").registerAction(method, path, action);
+    }
+
     forward404 (message) {
         throw new Errors.NotFoundException(this.get404Message(message));
     }
